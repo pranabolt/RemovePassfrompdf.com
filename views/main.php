@@ -66,17 +66,16 @@ require_once __DIR__ . '/partials/header.php';
                 <div class="relative border-2 border-dashed rounded-xl p-6 transition-colors border-slate-300 bg-white hover:bg-slate-50"
                      @dragover.prevent="drag=true" 
                      @dragleave.prevent="drag=false" 
-                     @drop.prevent="onDrop($event)" 
-                     @click="$refs.file && $refs.file.click()"
-                     :class="drag ? 'border-indigo-500 bg-indigo-50' : 'cursor-pointer'">
+                     @drop.prevent="onDrop($event)"
+                     :class="drag ? 'border-indigo-500 bg-indigo-50' : ''">
                   
-                  <input id="file-input-main" name="pdf" type="file" x-ref="file" @change="onFile()" accept="application/pdf" class="sr-only"/>
+                  <input id="file-input-main" name="pdf" type="file" x-ref="file" @change="onFile()" accept="application/pdf,.pdf" class="sr-only"/>
                   
                   <div class="text-center">
-                    <label for="file-input-main" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-800 cursor-pointer transition-colors">
+                    <button type="button" @click="$refs.file && $refs.file.click()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-800 cursor-pointer transition-colors">
                       <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
                       Choose PDF
-                    </label>
+                    </button>
                     <p class="mt-2 text-sm text-slate-600">or drag & drop your .pdf here</p>
                     <p class="mt-1 text-xs text-slate-500">PDF files only</p>
                   </div>
@@ -190,11 +189,15 @@ require_once __DIR__ . '/partials/header.php';
           const f = this.$refs.file.files[0];
           if (!f) { this.file = null; this.fileName = ''; return; }
           if (!f.name.toLowerCase().endsWith('.pdf')) {
-            this.error = 'Only PDF files are allowed.'; this.$refs.file.value = ''; this.file = null; this.fileName = ''; return;
+            this.error = 'Only PDF files are allowed.'; 
+            this.$refs.file.value = ''; 
+            this.file = null; 
+            this.fileName = ''; 
+            return;
           }
-          // Optional soft guard: extremely large files may fail in browser limits
-          // Optional: client-side soft limit removed to avoid surfacing server numbers
-          this.error = ''; this.file = f; this.fileName = f.name;
+          this.error = ''; 
+          this.file = f; 
+          this.fileName = f.name;
           // focus password prompt to guide user next
           this.$nextTick(() => { if (this.$refs.pwd) this.$refs.pwd.focus(); });
         },
@@ -202,9 +205,19 @@ require_once __DIR__ . '/partials/header.php';
           this.drag = false;
           const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
           if (!f) return;
-          if (!f.name.toLowerCase().endsWith('.pdf')) { this.error = 'Only PDF files are allowed.'; this.file = null; this.fileName = ''; return; }
-          // Optional: client-side soft limit removed to avoid surfacing server numbers
-          this.error = ''; this.file = f; this.fileName = f.name;
+          if (!f.name.toLowerCase().endsWith('.pdf')) { 
+            this.error = 'Only PDF files are allowed.'; 
+            this.file = null; 
+            this.fileName = ''; 
+            return; 
+          }
+          this.error = ''; 
+          this.file = f; 
+          this.fileName = f.name;
+          // Update the file input to match
+          const dt = new DataTransfer();
+          dt.items.add(f);
+          this.$refs.file.files = dt.files;
           this.$nextTick(() => { if (this.$refs.pwd) this.$refs.pwd.focus(); });
         },
         async submit() {

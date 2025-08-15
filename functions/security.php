@@ -22,6 +22,23 @@ function csrf_token(): string {
   return (string)$_SESSION['csrf'];
 }
 
+// Best-effort same-origin check using Origin or Referer headers
+function is_same_origin_request(): bool {
+  $host = $_SERVER['HTTP_HOST'] ?? '';
+  if ($host === '') return false;
+  $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+  if ($origin) {
+    $p = @parse_url($origin);
+    if (is_array($p) && ($p['host'] ?? '') === $host) return true;
+  }
+  $ref = $_SERVER['HTTP_REFERER'] ?? '';
+  if ($ref) {
+    $p = @parse_url($ref);
+    if (is_array($p) && ($p['host'] ?? '') === $host) return true;
+  }
+  return false;
+}
+
 function rate_limit_check(string $bucket, int $limit, int $windowSec): bool {
   $dir = STORAGE_DIR . '/rate';
   @mkdir($dir, 0775, true);

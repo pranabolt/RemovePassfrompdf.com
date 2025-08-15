@@ -22,7 +22,10 @@ if ($action === 'process') {
 
   if (!rate_limit_check('process', 30, 60)) json_fail('Too many requests. Please wait a minute and try again.', 429);
   if ($_SERVER['REQUEST_METHOD'] !== 'POST') json_fail('Invalid method', 405);
-  if (!hash_equals((string)($_POST['csrf'] ?? ''), csrf_token())) json_fail('Invalid session. Refresh and try again.', 403);
+  $csrfOk = hash_equals((string)($_POST['csrf'] ?? ''), csrf_token());
+  if (!$csrfOk && !is_same_origin_request()) {
+    json_fail('Invalid session. Refresh and try again.', 403);
+  }
     if (!isset($_FILES['pdf']) || !isset($_POST['password'])) json_fail('Missing file or password.');
 
     $pwd = trim((string)($_POST['password'] ?? ''));

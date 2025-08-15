@@ -20,8 +20,10 @@
 DirectoryIndex index.php
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  # Force HTTPS to avoid mixed-protocol POST redirects that can drop multipart bodies
-  RewriteCond %{HTTPS} !=on
+  # Force HTTPS (honor common proxy headers) to avoid POST body loss on redirect
+  RewriteCond %{HTTPS} !=on [OR]
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https [OR]
+  RewriteCond %{HTTP:CF-Visitor} !\{"scheme":"https"\}
   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
   # route everything to index.php
   RewriteCond %{REQUEST_FILENAME} !-f

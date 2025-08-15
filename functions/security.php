@@ -7,8 +7,12 @@ function send_common_headers(): void {
   header('X-Content-Type-Options: nosniff');
   header('X-Frame-Options: DENY');
   header('Referrer-Policy: strict-origin-when-cross-origin');
-  // CSP allows our own page plus Tailwind CDN and Alpine CDN; inline is used for small scripts/styles
-  header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com; connect-src 'self'; base-uri 'self'; form-action 'self'");
+  // Strengthened CSP with frame-ancestors and object-src none
+  header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'");
+  // Cross-origin isolation / resource policy (best-effort; may be ignored on shared hosts)
+  header('Cross-Origin-Resource-Policy: same-origin');
+  header('Cross-Origin-Opener-Policy: same-origin');
+  header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
 }
 
 function csrf_token(): string {

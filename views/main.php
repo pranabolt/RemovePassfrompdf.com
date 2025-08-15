@@ -213,10 +213,14 @@ require_once __DIR__ . '/partials/header.php';
 
           // Build FormData and POST to this same file (action=process)
           const fd = new FormData(this.$refs.form);
-          fd.set('pdf', this.file);
+          // Ensure the file field carries the original filename so PHP sees name*.pdf
+          if (this.file) {
+            fd.delete('pdf');
+            fd.append('pdf', this.file, this.file.name);
+          }
 
           try {
-            const res = await fetch('index.php', { method: 'POST', body: fd });
+            const res = await fetch('index.php', { method: 'POST', body: fd, credentials: 'same-origin' });
             this.progress = 60; this.status = 'Processing…';
             const data = await res.json();
             this.progress = 90;

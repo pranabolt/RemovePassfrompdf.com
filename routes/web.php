@@ -37,13 +37,11 @@ if ($action === 'process') {
     json_fail('File is too large. Maximum allowed is ' . (int)(MAX_SIZE_BYTES / 1024 / 1024) . ' MB.', 413);
   }
 
-    $ext = strtolower(pathinfo((string)$f['name'], PATHINFO_EXTENSION));
-    if ($ext !== 'pdf') json_fail('Only PDF files are allowed.');
-
-    $mime = @mime_content_type($f['tmp_name']);
-    if (!in_array($mime, ['application/pdf', 'application/octet-stream'], true)) {
-        json_fail('Invalid file type.');
-    }
+  // Verify by magic-bytes and MIME instead of trusting the filename extension
+  $mime = @mime_content_type($f['tmp_name']);
+  if (!is_pdf_file($f['tmp_name']) || !in_array($mime, ['application/pdf', 'application/octet-stream'], true)) {
+    json_fail('Invalid file type. Only real PDFs are allowed.');
+  }
 
     $tmpIn  = STORAGE_DIR . '/tmp/' . uniqid('in_', true)  . '.pdf';
     $tmpOut = STORAGE_DIR . '/out/' . uniqid('out_', true) . '.pdf';

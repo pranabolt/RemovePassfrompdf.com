@@ -63,3 +63,13 @@ function get_env(string $key, ?string $default = null): ?string {
   if ($v === false || $v === '') return $default;
   return $v;
 }
+
+// Basic PDF magic-bytes check to ensure uploaded file really is a PDF
+function is_pdf_file(string $path): bool {
+  if (!is_file($path)) return false;
+  $fh = @fopen($path, 'rb');
+  if (!$fh) return false;
+  $sig = fread($fh, 5);
+  fclose($fh);
+  return $sig === "%PDF-";
+}
